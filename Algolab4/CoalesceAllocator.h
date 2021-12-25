@@ -17,7 +17,7 @@ public:
 	virtual void dumpBlocks() const;
 #endif // _DEBUG
 
-	
+	bool ptrIsAllocated(void* p);
 
 
 	//allocate region

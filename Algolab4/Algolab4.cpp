@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include "CoalesceAllocator.h"
+#include "MemoryAllocator.h"
 
 int main()
 {
-    CoalesceAllocator allocator;
+    MemoryAllocator allocator;
     allocator.init();
     int* pi = (int*)allocator.alloc(sizeof(int));
     allocator.dumpStat();

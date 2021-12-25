@@ -32,13 +32,15 @@ CoalesceAllocator::Region* CoalesceAllocator::allocateRegion()
 		fl->next_free = block;
 		block->previous_free = fl;
 	}
+	block->free = true;
 	
 	return r;
 }
 
 bool CoalesceAllocator::trySplitBlock(Block* block, int size)
-{
-	if (block->size >= sizeof(Block) + size /*+ 512*/) {
+{	
+	const size_t min_second_block_size = 8;
+	if (block->size >= sizeof(Block) + size + min_second_block_size) {
 		Block* next_block = reinterpret_cast<Block*>(reinterpret_cast<INT8*>(block + 1) + size);
 		next_block->next_free = block->next_free;
 		block->next_free = next_block;
@@ -150,6 +152,10 @@ void CoalesceAllocator::free(void* p)
 {
 	_ASSERTE(p != nullptr && "p should not be null");
 
+	if (!ptrIsAllocated(p)) {
+		return;
+	}
+
 	Block* const block = reinterpret_cast<Block*>(p) - 1;
 
 #ifdef _DEBUG
@@ -243,6 +249,15 @@ void CoalesceAllocator::dumpBlocks() const
 	std::cout << "Total: \t" << count << " blocks." << std::endl;
 
 }
-
-
 #endif // _DEBUG
+
+bool CoalesceAllocator::ptrIsAllocated(void* p)
+{	
+	bool isAllocated = false;
+	for (Region* r = RegionHead; r; r = r->next) {
+		if (p >= r && p < (reinterpret_cast<size_t*>(r) + kRegionSize)) {
+			isAllocated = true;
+		}
+	}
+	return isAllocated;
+}
